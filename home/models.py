@@ -27,10 +27,12 @@ class Accomplish(models.Model):
         homework = self.homework.name
         return self.user.username + ' ' + self.homework.name
 
-class Document(models.Model):
-    document = models.FileField(upload_to = 'home/uploads/')
+class Upload(models.Model):
+    document = models.FileField(upload_to = 'home/upload/')
     uploaded_at = models.DateTimeField(auto_now_add = True)
     std_filename = models.CharField(max_length=200, blank=True, null=True)
+    def __str__(self):
+        return self.std_filename
 
 class UserProfile(models.Model):
     user = models.ForeignKey(User, on_delete = models.CASCADE)

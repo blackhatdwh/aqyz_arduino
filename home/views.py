@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.views.static import serve
 import subprocess, os, time
-from .models import Slide, Homework, Accomplish, Document
+from .models import Slide, Homework, Accomplish, Upload
 from django.contrib.auth.models import User
 from .forms import DocumentForm
 
@@ -34,7 +34,7 @@ def upload(request, student_id, hw_id, acc_id):
             # clean previous version
             student_name = User.objects.get(userprofile__student_id=student_id).username
             std_filename = student_name + '_' + hw_id
-            std_path = os.path.join(SITE_ROOT, 'uploads', std_filename)
+            std_path = os.path.join(SITE_ROOT, 'upload', std_filename)
             subprocess.run(['rm '+std_path+'.*'], shell=True)
             # save new version
             form.save()
@@ -47,11 +47,11 @@ def upload(request, student_id, hw_id, acc_id):
             extension = '.' + raw_filename.split('.')[-1]
             # rename
             std_filename += extension
-            newest_doc = Document.objects.order_by('-id')[0]
+            newest_doc = Upload.objects.order_by('-id')[0]
             newest_doc.std_filename = std_filename
             newest_doc.save()
-            std_path = os.path.join(SITE_ROOT, 'uploads', std_filename)
-            raw_path = os.path.join(SITE_ROOT, 'uploads', raw_filename)
+            std_path = os.path.join(SITE_ROOT, 'upload', std_filename)
+            raw_path = os.path.join(SITE_ROOT, 'upload', raw_filename)
             subprocess.run(['mv '+raw_path+' '+std_path], shell=True)
             return HttpResponse('Upload success!')
     else:
@@ -61,8 +61,8 @@ def upload(request, student_id, hw_id, acc_id):
 def download(request, student_id, hw_id):
     student_name = User.objects.get(userprofile__student_id=student_id).username
     filename_pre = student_name + '_' + hw_id
-    filename_real = Document.objects.filter(std_filename__startswith=filename_pre).order_by('-id')[0].std_filename
-    filepath = 'home/uploads/' + filename_real
+    filename_real = Upload.objects.filter(std_filename__startswith=filename_pre).order_by('-id')[0].std_filename
+    filepath = 'home/upload/' + filename_real
     print(filepath)
     return serve(request, os.path.basename(filepath), os.path.dirname(filepath))
 
