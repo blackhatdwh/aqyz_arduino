@@ -20,8 +20,6 @@ class Homework(models.Model):
 class Accomplish(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
     homework = models.ForeignKey(Homework, on_delete=models.CASCADE, default=None)
-    upload_link = models.CharField(max_length=200, default=None, blank=True, null=True)
-    download_link = models.CharField(max_length=200, default=None, blank=True, null=True)
     submit = models.BooleanField(default=False)
     score = models.IntegerField(default=0)
     def __str__(self):
@@ -32,10 +30,11 @@ class Accomplish(models.Model):
 class Document(models.Model):
     document = models.FileField(upload_to = 'home/uploads/')
     uploaded_at = models.DateTimeField(auto_now_add = True)
+    std_filename = models.CharField(max_length=200, blank=True, null=True)
 
 class UserProfile(models.Model):
     user = models.ForeignKey(User, on_delete = models.CASCADE)
-    student_id = models.CharField(max_length = 10)
+    student_id = models.CharField(max_length=10)
     def __str__(self):
         return self.user.username + ' ' + self.student_id
 User.profile = property(lambda u: UserProfile.objects.get_or_create(user=u)[0])

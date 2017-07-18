@@ -112,7 +112,7 @@
                   <td>{{ hw.ddl }}</td>
                   <td>{{ hw.point }}</td>
                   <td>{{ acc.score }}</td>
-                  <td><a id="{{ hw.id }}&{{ acc.id }}" href="" onclick='change_src(this.id)' data-toggle="modal" data-target="#exampleModalLive">Upload</a>/<a href="{{ acc.download_link}}">Download</a></td>
+                  <td><a id="{{ hw.id }}&{{ acc.id }}" href="" onclick='change_src(this.id)' data-toggle="modal" data-target="#exampleModalLive">Upload</a>/<a href="download/{{ student_id }}&{{ hw.id }}">Download</a></td>
                   <td>{{ acc.submit }}</td>
               </tr>
               {% endfor %}
