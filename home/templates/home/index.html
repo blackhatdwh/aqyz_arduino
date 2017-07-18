@@ -1,0 +1,180 @@
+<html>
+
+<head>
+    {% load static %}
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link href="https://cdn.bootcss.com/bootstrap/4.0.0-alpha.6/css/bootstrap.css" rel="stylesheet">
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-md navbar-light bg-faded">
+    <div class="container">
+      <a class="navbar-brand" href="">AQYZ_Arduino</a>
+      <span class="pull-right"><a class="btn btn-primary" href="login">Login</a></span>
+      <span class="pull-right">&nbsp;</span>
+      <span class="pull-right"><a class="btn btn-secondary" href="signup">Sign Up</a></span>
+    </div>
+  </nav>
+  <div class="py-2" id="image">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+            <img class="img-fluid d-block" src="{% static 'home/background.png' %}"> </div>
+      </div>
+    </div>
+  </div>
+  <br>
+  <div class="">
+    <div class="container">
+      {% if deadline %}
+      <div class="row">
+        <div class="col-md-12">
+          <div class="alert alert-danger" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">×</span> </button>
+            <h4 class="alert-heading">Deadline Coming!</h4>
+            <p>You have a deadline of {{ deadline }}</p>
+            <p class="mb-0">Finish it or you lose the score.</p>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+      {% if new_lecture %}
+      <div class="row">
+        <div class="col-md-12">
+          <div class="alert alert-info" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">×</span> </button>
+            <h4 class="alert-heading">Next Lecture!</h4>
+            <p>The new lecture is in {{ new_lecture }}</p>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="row">
+        <div class="col-md-12">
+          <h3 class="">Basic Information</h3>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+            <p class="">Instructor: 董玮豪 <a href="">dwh@zju.edu.cn</a>&nbsp;
+            <br>Teaching Assistant: 暂无</p>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <h3 class="">Slides</h3>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <ul class="list-group">
+            {% for slide in slides %}
+            <li class="list-group-item"><a href="{{ slide.link }}">{{ slide.name }}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+    <br>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <h3 class="">Homeworks</h3>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Homework</th>
+                <th>Deadline</th>
+                <th>Point</th>
+                <th>Score</th>
+                <th>Upload/Download</th>
+                <th>Submitted</th>
+              </tr>
+            </thead>
+            <tbody>
+            <script>
+              function change_src(hw_id){
+                  document.getElementById("upload-hw").src = "upload/" + {{ student_id }} + "&" + hw_id;
+              }
+            </script>
+              {% for hw,acc in hw_acces %}
+              <tr>
+                  <td><a href="{{ hw.link }}">{{ hw.name }}</a></td>
+                  <td>{{ hw.ddl }}</td>
+                  <td>{{ hw.point }}</td>
+                  <td>{{ acc.score }}</td>
+                  <td><a id="{{ hw.id }}&{{ acc.id }}" href="" onclick='change_src(this.id)' data-toggle="modal" data-target="#exampleModalLive">Upload</a>/<a href="{{ acc.download_link}}">Download</a></td>
+                  <td>{{ acc.submit }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <br>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <h3 class="">Resources</h3>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <ul class="">
+            <li>One</li>
+            <li>Two</li>
+            <li>Three</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <br>
+  <div class="bg-faded py-5">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <h3 class=" pi-item">Anqing No.1 Middle School - Arduino from Zero</h3>
+          <p> <strong>2017 安庆一中学长助学</strong>
+            <br>浙江大学计算机科学与技术学院
+            <br>董玮豪
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="exampleModalLive" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLiveLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLiveLabel">Upload Homework</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                  </button>
+              </div>
+              <div class="modal-body">
+                  <iframe id="upload-hw" src="upload" style="height:30%" frameborder="0" scrolling="no"></iframe>
+              </div>
+              <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              </div>
+          </div>
+      </div>
+  </div>
+
+  <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://cdn.bootcss.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js"></script>
+  <script src="https://cdn.bootcss.com/tether/1.4.0/js/tether.min.js"></script>
+</body>
+
+</html>
