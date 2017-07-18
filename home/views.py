@@ -58,11 +58,17 @@ def upload(request, student_id, hw_id, acc_id):
         form = DocumentForm()
     return render(request, 'home/upload.html', {'form': form})
 
-def download(request, student_id, hw_id):
+def download_hw(request, student_id, hw_id):
     student_name = User.objects.get(userprofile__student_id=student_id).username
     filename_pre = student_name + '_' + hw_id
     filename_real = Upload.objects.filter(std_filename__startswith=filename_pre).order_by('-id')[0].std_filename
     filepath = 'home/upload/' + filename_real
-    print(filepath)
+    return serve(request, os.path.basename(filepath), os.path.dirname(filepath))
+
+def download_doc(request, doc_type, doc_id):
+    if doc_type == 'slide':
+        filepath = 'home/documents/slide/' + Slide.objects.get(id=doc_id).document.name
+    elif doc_type == 'homework':
+        filepath = 'home/documents/homework/' + Homework.objects.get(id=doc_id).document.name
     return serve(request, os.path.basename(filepath), os.path.dirname(filepath))
 

@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 
 class Slide(models.Model):
     name = models.CharField(max_length=200)
-    link = models.CharField(max_length=200)
+    document = models.FileField(null=True, blank=True)
     def __str__(self):
         return self.name
 
@@ -13,7 +13,7 @@ class Homework(models.Model):
     name = models.CharField(max_length=200)
     ddl = models.DateTimeField()
     point = models.IntegerField(default=None)
-    link = models.CharField(max_length=200, blank=True, null=True)
+    document = models.FileField(null=True, blank=True)
     def __str__(self):
         return self.name
 
@@ -27,6 +27,7 @@ class Accomplish(models.Model):
         homework = self.homework.name
         return self.user.username + ' ' + self.homework.name
 
+# handle upload and download of student homework
 class Upload(models.Model):
     document = models.FileField(upload_to = 'home/upload/')
     uploaded_at = models.DateTimeField(auto_now_add = True)

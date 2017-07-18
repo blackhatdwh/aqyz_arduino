@@ -74,7 +74,7 @@
         <div class="col-md-12">
           <ul class="list-group">
             {% for slide in slides %}
-            <li class="list-group-item"><a href="{{ slide.link }}">{{ slide.name }}</a></li>
+            <li class="list-group-item"><a href="download_doc/slide/{{ slide.id }}">{{ slide.name }}</a></li>
             {% endfor %}
           </ul>
         </div>
@@ -108,11 +108,11 @@
             </script>
               {% for hw,acc in hw_acces %}
               <tr>
-                  <td><a href="{{ hw.link }}">{{ hw.name }}</a></td>
+                  <td><a href="download_doc/homework/{{ hw.id }}">{{ hw.name }}</a></td>
                   <td>{{ hw.ddl }}</td>
                   <td>{{ hw.point }}</td>
                   <td>{{ acc.score }}</td>
-                  <td><a id="{{ hw.id }}&{{ acc.id }}" href="" onclick='change_src(this.id)' data-toggle="modal" data-target="#exampleModalLive">Upload</a>/<a href="download/{{ student_id }}&{{ hw.id }}">Download</a></td>
+                  <td><a id="{{ hw.id }}&{{ acc.id }}" href="" onclick='change_src(this.id)' data-toggle="modal" data-target="#exampleModalLive">Upload</a>/<a href="download_hw/{{ student_id }}&{{ hw.id }}">Download</a></td>
                   <td>{{ acc.submit }}</td>
               </tr>
               {% endfor %}
