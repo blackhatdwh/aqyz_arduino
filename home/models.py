@@ -22,6 +22,8 @@ class Accomplish(models.Model):
     homework = models.ForeignKey(Homework, on_delete=models.CASCADE, default=None)
     submit = models.BooleanField(default=False)
     score = models.IntegerField(default=0)
+    class Meta:
+        unique_together = (("homework", "user"),)
     def __str__(self):
         username = self.user.username
         homework = self.homework.name

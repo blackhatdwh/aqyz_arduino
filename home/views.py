@@ -1,14 +1,18 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, HttpResponseRedirect
+from django.contrib.auth import authenticate, login, logout
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.views.static import serve
 import subprocess, os, time
-from .models import Slide, Homework, Accomplish, Upload
+from .models import Slide, Homework, Accomplish, Upload, UserProfile
 from django.contrib.auth.models import User
 from .forms import DocumentForm
 
-# Create your views here.
+this_student_id = ''
+
 def index(request):
-    this_student_id = "10001"
+    global this_student_id
     slides = Slide.objects.all()
     homeworks = Homework.objects.all()
     hw = []
@@ -19,13 +23,21 @@ def index(request):
                 hw.append(homework)
                 acc.append(accomplish)
     hw_acces = zip(hw, acc)
+    student_name = ''
+    try:
+        student_name = User.objects.get(userprofile__student_id=this_student_id).username
+    except User.DoesNotExist:
+        pass
+
     content = {
             'slides': slides, 
             'hw_acces': hw_acces,
             'student_id': this_student_id,
+            'student_name': student_name,
             }
     return render(request, 'home/index.html', content)
 
+@login_required
 def upload(request, student_id, hw_id, acc_id):
     if request.method == 'POST':
         form = DocumentForm(request.POST, request.FILES)
@@ -53,11 +65,12 @@ def upload(request, student_id, hw_id, acc_id):
             std_path = os.path.join(SITE_ROOT, 'upload', std_filename)
             raw_path = os.path.join(SITE_ROOT, 'upload', raw_filename)
             subprocess.run(['mv '+raw_path+' '+std_path], shell=True)
-            return HttpResponse('Upload success!')
+            return HttpResponse('Upload success!<script>parent.location.reload();</script>')
     else:
         form = DocumentForm()
     return render(request, 'home/upload.html', {'form': form})
 
+@login_required
 def download_hw(request, student_id, hw_id):
     student_name = User.objects.get(userprofile__student_id=student_id).username
     filename_pre = student_name + '_' + hw_id
@@ -72,3 +85,61 @@ def download_doc(request, doc_type, doc_id):
         filepath = 'home/documents/homework/' + Homework.objects.get(id=doc_id).document.name
     return serve(request, os.path.basename(filepath), os.path.dirname(filepath))
 
+@csrf_exempt
+def signup(request):
+    if request.method == 'POST':
+        given_username = request.POST.get('username')
+        given_password_1 = request.POST.get('password1')
+        given_password_2 = request.POST.get('password2')
+        if given_username == '' or given_password_1 == '' or given_password_2 == '':
+            return HttpResponse('<script>alert("Please complete all blanks!"); parent.location.reload();</script>')
+        if given_password_1 != given_password_2:
+            return HttpResponse('<script>alert("Password is inconsistent!"); parent.location.reload();</script>')
+        try:
+            User.objects.get(username=given_username)
+        # if this user doesn't exist, accept register request
+        except User.DoesNotExist:
+            # create user
+            new_user = User.objects.create(username=given_username, password=given_password_1)
+            new_user.set_password(given_password_1)
+            new_user.save()
+            # create student_id
+            new_student_id = str(int(UserProfile.objects.order_by('-id')[0].student_id) + 1)
+            UserProfile.objects.create(user=new_user, student_id=new_student_id)
+            # create accomplish
+            for hw in Homework.objects.all():
+                Accomplish.objects.create(user=new_user, homework=hw)
+            register_success = r'<p>Register success.</p><p>Your student ID is %s.</p><p>You can sign in either using your real name or the student ID.</p>' % new_student_id
+            return HttpResponse(register_success)
+        # if already exist, deny register request
+        else:
+            return HttpResponse('<script>alert("User already exists. Try another name."); parent.location.reload();</script>')
+
+    return render(request, 'home/signup.html', {})
+    
+@csrf_exempt
+def signin(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(username=username, password=password)
+        if user is None:
+            try:
+                username = User.objects.get(userprofile__student_id=username).username
+            except User.DoesNotExist:
+                return HttpResponse('Username or password error. Please try again.<script>parent.location.reload();</script>')
+            else:
+                user = authenticate(username=username, password=password)
+                if user is None:
+                    return HttpResponse('Username or password error. Please try again.<script>parent.location.reload();</script>')
+        login(request, user)
+        global this_student_id
+        this_student_id = user.profile.student_id
+        return HttpResponse('Sign in success!<script>parent.location.reload();</script>')
+    return render(request, 'home/signin.html', {})
+
+def signout(request):
+    logout(request)
+    global this_student_id
+    this_student_id = ''
+    return HttpResponseRedirect('/home')

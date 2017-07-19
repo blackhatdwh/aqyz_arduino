@@ -12,9 +12,15 @@
   <nav class="navbar navbar-expand-md navbar-light bg-faded">
     <div class="container">
       <a class="navbar-brand" href="">AQYZ_Arduino</a>
-      <span class="pull-right"><a class="btn btn-primary" href="login">Login</a></span>
+      {% if student_id %}
+      <span class="pull-right"><a href="signout">Sign Out</a></span>
       <span class="pull-right">&nbsp;</span>
-      <span class="pull-right"><a class="btn btn-secondary" href="signup">Sign Up</a></span>
+      <span class="pull-right">Welcome, {{ student_name }}! </span>
+      {% else %}
+      <span class="pull-right"><a class="btn btn-primary" href="" data-toggle="modal" data-target="#signin">Sign In</a></span>
+      <span class="pull-right">&nbsp;</span>
+      <span class="pull-right"><a class="btn btn-secondary" href="" data-toggle="modal" data-target="#signup">Sign Up</a></span>
+      {% endif %}
     </div>
   </nav>
   <div class="py-2" id="image">
@@ -112,7 +118,7 @@
                   <td>{{ hw.ddl }}</td>
                   <td>{{ hw.point }}</td>
                   <td>{{ acc.score }}</td>
-                  <td><a id="{{ hw.id }}&{{ acc.id }}" href="" onclick='change_src(this.id)' data-toggle="modal" data-target="#exampleModalLive">Upload</a>/<a href="download_hw/{{ student_id }}&{{ hw.id }}">Download</a></td>
+                  <td><a id="{{ hw.id }}&{{ acc.id }}" href="" onclick='change_src(this.id)' data-toggle="modal" data-target="#uploadFile">Upload</a>/<a href="download_hw/{{ student_id }}&{{ hw.id }}">Download</a></td>
                   <td>{{ acc.submit }}</td>
               </tr>
               {% endfor %}
@@ -153,7 +159,7 @@
     </div>
   </div>
 
-  <div id="exampleModalLive" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLiveLabel" aria-hidden="true">
+  <div id="uploadFile" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLiveLabel" aria-hidden="true">
       <div class="modal-dialog" role="document">
           <div class="modal-content">
               <div class="modal-header">
@@ -164,6 +170,44 @@
               </div>
               <div class="modal-body">
                   <iframe id="upload-hw" src="upload" style="height:30%" frameborder="0" scrolling="no"></iframe>
+              </div>
+              <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              </div>
+          </div>
+      </div>
+  </div>
+
+  <div id="signup" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLiveLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLiveLabel">Sign Up</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                  </button>
+              </div>
+              <div class="modal-body">
+                  <iframe src="signup" style="height:50%" frameborder="0" scrolling="no"></iframe>
+              </div>
+              <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              </div>
+          </div>
+      </div>
+  </div>
+
+  <div id="signin" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLiveLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLiveLabel">Sign In</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                  </button>
+              </div>
+              <div class="modal-body">
+                  <iframe src="signin" style="height:40%" frameborder="0" scrolling="no"></iframe>
               </div>
               <div class="modal-footer">
                   <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
