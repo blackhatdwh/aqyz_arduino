@@ -13,9 +13,8 @@
     <div class="container">
       <a class="navbar-brand" href="">AQYZ_Arduino</a>
       {% if student_id %}
-      <span class="pull-right"><a href="signout">Sign Out</a></span>
-      <span class="pull-right">&nbsp;</span>
-      <span class="pull-right">Welcome, {{ student_name }}! </span>
+      <span class="pull-right"><a class="btn" href="signout">Sign Out</a></span>
+      <span class="pull-right"><a class="btn">Welcome, {{ student_name }}! </a></span>
       {% else %}
       <span class="pull-right"><a class="btn btn-primary" href="" data-toggle="modal" data-target="#signin">Sign In</a></span>
       <span class="pull-right">&nbsp;</span>
@@ -41,7 +40,7 @@
             <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">×</span> </button>
             <h4 class="alert-heading">Deadline Coming!</h4>
             <p>You have a deadline of {{ deadline }}</p>
-            <p class="mb-0">Finish it or you lose the score.</p>
+            <p class="mb-0">Finish it or you lose the point.</p>
           </div>
         </div>
       </div>
@@ -52,7 +51,7 @@
           <div class="alert alert-info" role="alert">
             <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">×</span> </button>
             <h4 class="alert-heading">Next Lecture!</h4>
-            <p>The new lecture is in {{ new_lecture }}</p>
+            <p>The new lecture {{ new_lecture }}</p>
           </div>
         </div>
       </div>
@@ -66,7 +65,10 @@
       <div class="row">
         <div class="col-md-12">
             <p class="">Instructor: 董玮豪 <a href="">dwh@zju.edu.cn</a>&nbsp;
-            <br>Teaching Assistant: 暂无</p>
+            <br>Teaching Assistant: 暂无
+            {% if student_id %}
+            <br>Your Student ID: {{ student_id }}
+            {% endif %}</p>
         </div>
       </div>
     </div>
@@ -113,7 +115,7 @@
               }
             </script>
               {% for hw,acc in hw_acces %}
-              <tr>
+              <tr{% if hw.id in active_hw %} class="table-success"{% endif %}>
                   <td><a href="download_doc/homework/{{ hw.id }}">{{ hw.name }}</a></td>
                   <td>{{ hw.ddl }}</td>
                   <td>{{ hw.point }}</td>

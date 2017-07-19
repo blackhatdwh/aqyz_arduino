@@ -1,19 +1,23 @@
 from django.shortcuts import render, redirect, HttpResponseRedirect
+from django.utils import timezone
 from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.views.static import serve
-import subprocess, os, time
-from .models import Slide, Homework, Accomplish, Upload, UserProfile
+import subprocess, os, time, datetime
+from .models import Slide, Homework, Accomplish, Upload, UserProfile, Lecture
 from django.contrib.auth.models import User
 from .forms import DocumentForm
 
 this_student_id = ''
 
 def index(request):
+    # prepare student ID
     global this_student_id
+    # prepare slides
     slides = Slide.objects.all()
+    # prepare homework and accomplish
     homeworks = Homework.objects.all()
     hw = []
     acc = []
@@ -23,17 +27,45 @@ def index(request):
                 hw.append(homework)
                 acc.append(accomplish)
     hw_acces = zip(hw, acc)
+    # prepare student name
     student_name = ''
     try:
         student_name = User.objects.get(userprofile__student_id=this_student_id).username
     except User.DoesNotExist:
         pass
+    # prepare active_hw
+    active_hw = []
+    for hw in Homework.objects.order_by('-id'):
+        if timezone.localtime(timezone.now()) < hw.ddl:
+            active_hw.append(hw.id)
+        else:
+            break
+    # prepare deadline
+    deadline = ''
+    try:
+        student = User.objects.get(userprofile__student_id=this_student_id)
+    except User.DoesNotExist:
+        pass
+    else:
+        for acc in student.accomplish_set.order_by('homework__ddl'):
+            time_left = acc.homework.ddl - timezone.localtime(timezone.now())
+            if acc.submit == False and time_left < datetime.timedelta(hours=8) and time_left > datetime.timedelta(hours=0):
+                deadline = '%s in less than %.2f hours.' % (str(acc.homework), time_left.seconds/3600)
+
+    # prepare new_lecture
+    new_lecture = ''
+    for l in Lecture.objects.order_by('time'):
+        if timezone.localtime(timezone.now()) < l.time:
+            new_lecture = r'"%s" is on %s.' % (l.title, str(timezone.localtime(l.time)).split('+')[0])
 
     content = {
             'slides': slides, 
             'hw_acces': hw_acces,
             'student_id': this_student_id,
             'student_name': student_name,
+            'deadline': deadline,
+            'new_lecture': new_lecture,
+            'active_hw': active_hw,
             }
     return render(request, 'home/index.html', content)
 
@@ -41,31 +73,34 @@ def index(request):
 def upload(request, student_id, hw_id, acc_id):
     if request.method == 'POST':
         form = DocumentForm(request.POST, request.FILES)
-        if form.is_valid():
-            SITE_ROOT = os.path.dirname(os.path.realpath(__file__))
-            # clean previous version
-            student_name = User.objects.get(userprofile__student_id=student_id).username
-            std_filename = student_name + '_' + hw_id
-            std_path = os.path.join(SITE_ROOT, 'upload', std_filename)
-            subprocess.run(['rm '+std_path+'.*'], shell=True)
-            # save new version
-            form.save()
-            # modify submit status
-            tmp_acc = Accomplish.objects.get(id=acc_id)
-            tmp_acc.submit = True
-            tmp_acc.save()
-            # get original name
-            raw_filename = request.FILES['document'].name
-            extension = '.' + raw_filename.split('.')[-1]
-            # rename
-            std_filename += extension
-            newest_doc = Upload.objects.order_by('-id')[0]
-            newest_doc.std_filename = std_filename
-            newest_doc.save()
-            std_path = os.path.join(SITE_ROOT, 'upload', std_filename)
-            raw_path = os.path.join(SITE_ROOT, 'upload', raw_filename)
-            subprocess.run(['mv '+raw_path+' '+std_path], shell=True)
-            return HttpResponse('Upload success!<script>parent.location.reload();</script>')
+        if timezone.localtime(timezone.now()) < Homework.objects.get(id=hw_id).ddl:
+            if form.is_valid():
+                SITE_ROOT = os.path.dirname(os.path.realpath(__file__))
+                # clean previous version
+                student_name = User.objects.get(userprofile__student_id=student_id).username
+                std_filename = student_name + '_' + hw_id
+                std_path = os.path.join(SITE_ROOT, 'upload', std_filename)
+                subprocess.run(['rm '+std_path+'.*'], shell=True)
+                # save new version
+                form.save()
+                # modify submit status
+                tmp_acc = Accomplish.objects.get(id=acc_id)
+                tmp_acc.submit = True
+                tmp_acc.save()
+                # get original name
+                raw_filename = request.FILES['document'].name
+                extension = '.' + raw_filename.split('.')[-1]
+                # rename
+                std_filename += extension
+                newest_doc = Upload.objects.order_by('-id')[0]
+                newest_doc.std_filename = std_filename
+                newest_doc.save()
+                std_path = os.path.join(SITE_ROOT, 'upload', std_filename)
+                raw_path = os.path.join(SITE_ROOT, 'upload', raw_filename)
+                subprocess.run(['mv '+raw_path+' '+std_path], shell=True)
+                return HttpResponse('Upload success!<script>parent.location.reload();</script>')
+        else:
+            return HttpResponse('Deadline missed. Upload fail.')
     else:
         form = DocumentForm()
     return render(request, 'home/upload.html', {'form': form})

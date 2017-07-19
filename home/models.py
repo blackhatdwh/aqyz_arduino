@@ -43,3 +43,9 @@ class UserProfile(models.Model):
     def __str__(self):
         return self.user.username + ' ' + self.student_id
 User.profile = property(lambda u: UserProfile.objects.get_or_create(user=u)[0])
+
+class Lecture(models.Model):
+    title = models.CharField(max_length = 200)
+    time = models.DateTimeField()
+    def __str__(self):
+        return self.title
