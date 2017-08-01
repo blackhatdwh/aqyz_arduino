@@ -114,10 +114,13 @@ def download_hw(request, student_id, hw_id):
     return serve(request, os.path.basename(filepath), os.path.dirname(filepath))
 
 def download_doc(request, doc_type, doc_id):
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     if doc_type == 'slide':
-        filepath = 'home/documents/slide/' + Slide.objects.get(id=doc_id).document.name
+        #filepath = 'home/documents/slide/' + Slide.objects.get(id=doc_id).document.name
+        filepath = os.path.join(BASE_DIR, Slide.objects.get(id=doc_id).document.name)
     elif doc_type == 'homework':
-        filepath = 'home/documents/homework/' + Homework.objects.get(id=doc_id).document.name
+        #filepath = 'home/documents/homework/' + Homework.objects.get(id=doc_id).document.name
+        filepath = os.path.join(BASE_DIR, Homework.objects.get(id=doc_id).document.name)
     return serve(request, os.path.basename(filepath), os.path.dirname(filepath))
 
 @csrf_exempt
