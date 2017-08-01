@@ -10,11 +10,13 @@ from .models import Slide, Homework, Accomplish, Upload, UserProfile, Lecture
 from django.contrib.auth.models import User
 from .forms import DocumentForm
 
-this_student_id = ''
 
 def index(request):
     # prepare student ID
-    global this_student_id
+    try:
+        this_student_id = request.session['student_id']
+    except KeyError:
+        this_student_id = ''
     # prepare slides
     slides = Slide.objects.all()
     # prepare homework and accomplish
@@ -171,13 +173,10 @@ def signin(request):
                 if user is None:
                     return HttpResponse('Username or password error. Please try again.<script>parent.location.reload();</script>')
         login(request, user)
-        global this_student_id
-        this_student_id = user.profile.student_id
+        request.session['student_id'] = user.profile.student_id
         return HttpResponse('Sign in success!<script>parent.location.reload();</script>')
     return render(request, 'home/signin.html', {})
 
 def signout(request):
     logout(request)
-    global this_student_id
-    this_student_id = ''
     return HttpResponseRedirect('/home')
